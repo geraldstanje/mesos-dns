@@ -150,6 +150,21 @@ func (res *Resolver) formatSOA(dom string) (*dns.SOA, error) {
 	}, nil
 }
 
+// formatNS returns the NS resource record for the mesos domain
+func (res *Resolver) formatNS(dom string) (*dns.NS, error) {
+  ttl := uint32(res.Config.TTL)
+
+  return &dns.NS{
+    Hdr: dns.RR_Header{
+      Name:   dom,
+      Rrtype: dns.TypeNS,
+      Class:  dns.ClassINET,
+      Ttl:    ttl,
+    },
+    Ns:      res.Config.Mname,
+  }, nil
+}
+
 // shuffleAnswers reorders answers for very basic load balancing
 func shuffleAnswers(answers []dns.RR) []dns.RR {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -282,6 +297,20 @@ func (res *Resolver) HandleMesos(w dns.ResponseWriter, r *dns.Msg) {
 			m.Ns = append(m.Ns, rr)
 		}
 
+  case dns.TypeNS:
+
+    m = new(dns.Msg)
+    m.SetReply(r)
+
+    rr, err := res.formatNS(r.Question[0].Name)
+    if err != nil {
+      logging.Error.Println(err)
+    } else {
+      m.Ns = append(m.Ns, rr)
+    }
+
+    fmt.Println("dns.TypeNS called...")
+    fmt.Println("m.Answer: ", m.Answer)
 	}
 
 	// shuffle answers

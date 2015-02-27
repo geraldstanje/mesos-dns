@@ -197,6 +197,24 @@ func TestHandler(t *testing.T) {
 		t.Error("not serving up A records")
 	}
 
+  // test NS
+  o, err3 := fakeQuery("mesos.", dns.TypeNS, "udp")
+  if err3 != nil {
+    t.Error(err3)
+  }
+
+  if len(o) != 3 {
+    t.Error("not serving up NS")
+  }
+
+  p, err4 := fakeQuery("mesos.", dns.TypeNS, "tcp")
+  if err4 != nil {
+    t.Error(err4)
+  }
+
+  if len(p) != 3 {
+    t.Error("not serving up NS")
+  }
 }
 
 func TestNonMesosHandler(t *testing.T) {
